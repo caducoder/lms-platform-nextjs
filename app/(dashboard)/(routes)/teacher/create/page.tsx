@@ -41,7 +41,9 @@ const CreatePage = () => {
     console.log(values)
     try {
       const response = await axios.post("/api/courses", values)
-      router.push(`/teacher/courses/${response.id}`)
+      console.log(response)
+      router.push(`/teacher/courses/${response.data.id}`)
+      toast.success("Curso criado!")
     } catch {
       toast.error("Erro inesperado.")
     }
