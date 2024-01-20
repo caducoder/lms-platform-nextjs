@@ -1,11 +1,11 @@
 "use client"
 
-import React from 'react'
+import React, { useState } from 'react'
 import * as z from "zod"
 import axios from 'axios'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 import {
   Form,
   FormControl,
@@ -17,8 +17,15 @@ import {
 } from "@/components/ui/form"
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import Link from 'next/link'
-import toast from "react-hot-toast"
+import toast from 'react-hot-toast'
+import { Pencil } from 'lucide-react'
+
+interface TitleFormProps {
+  initialData: {
+    title: string;
+  },
+  courseId: string;
+}
 
 const formSchema = z.object({
   title: z.string().min(1, {
@@ -26,13 +33,13 @@ const formSchema = z.object({
   })
 })
 
-const CreatePage = () => {
+const TitleForm = ({ initialData, courseId }: TitleFormProps) => {
   const router = useRouter()
+  const [isEditing, setIsEditing] = useState(false);
+  const toggleEdit = () => setIsEditing((current) => !current)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: ""
-    }
+    defaultValues: initialData
   })
 
   const { isSubmitting, isValid } = form.formState
@@ -40,73 +47,69 @@ const CreatePage = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log(values)
     try {
-      const response = await axios.post("/api/courses", values)
+      const response = await axios.patch(`/api/courses/${courseId}`, values)
       console.log(response)
-      router.push(`/teacher/courses/${response.data.id}`)
-      toast.success("Curso criado!")
+      toast.success("Curso atualizado")
+      toggleEdit()
+      router.refresh()
     } catch {
       toast.error("Erro inesperado.")
     }
   }
 
   return (
-    <div className='max-w-5xl mx-auto flex md:items-center md:justify-center h-full p-6'>
-      <div>
-        <h1 className='text-2xl'>
-          Nome do curso
-        </h1>
-        <p className='text-sm text-slate-600'>
-          Como você gostaria de chamar o seu curso?
+    <div className='mt-6 border bg-slate-100 rounded-md p-4'>
+      <div className="font-medium flex items-center justify-between">
+        Título do curso
+        <Button variant="ghost" onClick={toggleEdit}>
+          {isEditing ? (
+            <>Cancelar</>
+          ) : (
+            <>
+              <Pencil className='h-4 w-4 mr-2' />
+              Editar título
+            </>
+          )}
+        </Button>
+      </div>
+      {!isEditing ? (
+        <p className="text-sm">
+          {initialData.title}
         </p>
+      ) : (
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className='space-y-8 mt-8'
           >
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    Título do curso
-                  </FormLabel>
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="ex. 'Comunicação Empresarial'"
+                      placeholder="ex. 'Comunicação empresarial'"
                       {...field}
                     />
-
                   </FormControl>
-                  <FormDescription>
-                    O que você vai ensinar neste curso?
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="flex items-center gap-x-2">
-              <Link href="/">
-                <Button
-                  type="button"
-                  variant="ghost"
-                >
-                  Cancelar
-                </Button>
-              </Link>
+            <div className="flex items-center gap-x-2 mt-2">
               <Button
-                type="submit"
                 disabled={!isValid || isSubmitting}
+                type="submit"
               >
-                Continuar
+                Salvar
               </Button>
             </div>
           </form>
         </Form>
-      </div>
+      )}
     </div>
   )
 }
 
-export default CreatePage
+export default TitleForm
