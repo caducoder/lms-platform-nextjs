@@ -21,17 +21,16 @@ import toast from 'react-hot-toast'
 import { Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Textarea } from '@/components/ui/textarea'
+import { Course } from '@prisma/client'
 
 interface DescriptionFormProps {
-  initialData: {
-    description: string | null;
-  },
+  initialData: Course,
   courseId: string;
 }
 
 const formSchema = z.object({
   description: z.string().min(1, {
-    message: "Título é obrigatório",
+    message: "Descrição é obrigatório",
   })
 })
 
@@ -41,7 +40,9 @@ const DescriptionForm = ({ initialData, courseId }: DescriptionFormProps) => {
   const toggleEdit = () => setIsEditing((current) => !current)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: initialData
+    defaultValues: {
+      description: initialData?.description || ""
+    }
   })
 
   const { isSubmitting, isValid } = form.formState
