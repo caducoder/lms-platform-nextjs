@@ -18,10 +18,11 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import toast from 'react-hot-toast'
-import { Pencil, PlusCircle } from 'lucide-react'
+import { Loader2, Pencil, PlusCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Textarea } from '@/components/ui/textarea'
 import { Chapter, Course } from '@prisma/client'
+import ChaptersList from './chapters-list'
 
 interface ChaptersFormProps {
   initialData: Course & { chapters: Chapter[] },
@@ -57,8 +58,29 @@ const ChaptersForm = ({ initialData, courseId }: ChaptersFormProps) => {
     }
   }
 
+  const onReorder = async (updatedData: { id: string, position: number}[] ) => {
+    try {
+      setIsUpdating(true)
+
+      await axios.put(`/api/courses/${courseId}/chapters/reorder`, {
+        list: updatedData
+      })
+      toast.success("Capítulos reordenados")
+      router.refresh()
+    } catch (error) {
+      toast.error("Algo deu errado")
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
   return (
-    <div className='mt-6 border bg-slate-100 rounded-md p-4'>
+    <div className='relative mt-6 border bg-slate-100 rounded-md p-4'>
+      {isUpdating && (
+        <div className="absolute top-0 right-0 h-full w-full bg-slate-500/20 rounded-md flex items-center justify-center">
+          <Loader2 className="animate-spin h-6 w-6 text-sky-700" />
+        </div>
+      )}
       <div className="font-medium flex items-center justify-between">
         Capítulos do curso
         <Button variant="ghost" onClick={toggleCreating}>
@@ -110,7 +132,11 @@ const ChaptersForm = ({ initialData, courseId }: ChaptersFormProps) => {
           !initialData.chapters.length && "text-slate-500 italic"
         )}>
           {!initialData.chapters.length && "Sem capítulos"}
-          
+          <ChaptersList
+            onEdit={() => {}}
+            onReorder={onReorder}
+            items={initialData.chapters || []}
+          />
         </div>
       )}
       {!isCreating && (
