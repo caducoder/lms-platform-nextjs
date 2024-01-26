@@ -91,11 +91,13 @@ const ChaptersList = ({ items, onEdit, onReorder }: ChaptersListProps) => {
                     {chapter.title}
                     <div className="ml-auto pr-2 flex items-center gap-x-2">
                       {chapter.isFree && (
-                        <Badge>
+                        <Badge className="bg-green-700">
                           Grátis
                         </Badge>
                       )}
-                      <Badge>
+                      <Badge className={cn(
+                        chapter.isPublished && "bg-sky-700"
+                      )}>
                         {chapter.isPublished ? "Publicado" : "Rascunho"}
                       </Badge>
                       <Pencil

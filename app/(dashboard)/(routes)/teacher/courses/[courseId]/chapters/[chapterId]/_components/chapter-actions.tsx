@@ -34,6 +34,7 @@ const ChapterActions = ({
         await axios.patch(`/api/courses/${courseId}/chapters/${chapterId}/publish`)
         toast.success("Capítulo publicado")
       }
+      router.refresh()
     } catch (error) {
       toast.error("Algo deu errado")
     } finally {
